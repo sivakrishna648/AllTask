@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Frontend Development
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: hiringhood-frontend-dev
+    ports:
+      - "3001:3001"
+      - "80:80"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+    networks:
+      - hiringhood-network
+    restart: "no"
+
+  # Backend Development
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: hiringhood-backend-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/__tests__:/app/__tests__
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    networks:
+      - hiringhood-network
+    restart: "no"
+
+networks:
+  hiringhood-network:
+    driver: bridge

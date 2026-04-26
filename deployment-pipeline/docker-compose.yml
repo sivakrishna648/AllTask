@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Frontend Nginx Server
+  frontend:
+    image: hiringhood/frontend:latest
+    container_name: hiringhood-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - hiringhood-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend API Server
+  backend:
+    image: hiringhood/backend:latest
+    container_name: hiringhood-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    networks:
+      - hiringhood-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+networks:
+  hiringhood-network:
+    driver: bridge
+
+volumes:
+  hiringhood-data:
+    driver: local
